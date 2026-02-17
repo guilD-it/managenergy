@@ -84,15 +84,13 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DB_ENGINE = os.getenv("DB_ENGINE", "django.db.backends.postgresql")
 DB_NAME = os.getenv("DB_NAME", "managenergy_db")
 
-if DB_ENGINE == "django.db.backends.sqlite3":
-    DB_NAME = str(BASE_DIR / os.getenv("DB_NAME", "db.sqlite3"))
 
 DATABASES = {
     "default": {
         "ENGINE": DB_ENGINE,
         "NAME": DB_NAME,
-        "USER": os.getenv("DB_USER", "managenergy_user"),
-        "PASSWORD": os.getenv("DB_PASSWORD", "change-me"),
+        "USER": os.getenv("DB_USER", ""),
+        "PASSWORD": os.getenv("DB_PASSWORD", ""),
         "HOST": os.getenv("DB_HOST", "localhost"),
         "PORT": os.getenv("DB_PORT", "5432"),
     }
