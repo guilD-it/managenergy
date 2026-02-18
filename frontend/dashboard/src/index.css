@@ -150,8 +150,17 @@ a:hover {
   .filter-bar .btn {
     width: 100%;
   }
+  .filter-action {
+    width: 100%;
+  }
+  .filter-action .btn {
+    width: 100%;
+  }
   .filter-bar .form-select,
   .filter-bar .form-control {
+    width: 100%;
+  }
+  .filter-bar > div {
     width: 100%;
   }
   .table-responsive {

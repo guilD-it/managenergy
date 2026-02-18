@@ -94,7 +94,7 @@ export default function Consumptions() {
                 ))}
               </select>
             </div>
-            <div className="ms-auto">
+            <div className="filter-action">
               <Link to="/consommations/ajouter" className="btn btn-primary">
                 Ajouter
               </Link>
