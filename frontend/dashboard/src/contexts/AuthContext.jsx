@@ -1,5 +1,5 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { fetchCurrentUser, login, logout, register } from '../api/energyApi.js'
+import { createContext, useContext, useMemo, useState } from 'react'
+import { login, logout, register } from '../api/energyApi.js'
 
 const AuthContext = createContext(null)
 
@@ -12,44 +12,7 @@ const getStoredUser = () => {
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(getStoredUser)
-  const [authChecked, setAuthChecked] = useState(false)
-
-  useEffect(() => {
-    let isMounted = true
-
-    const verifySession = async () => {
-      if (!user) {
-        setAuthChecked(true)
-        return
-      }
-
-      try {
-        const currentUser = await fetchCurrentUser()
-        if (isMounted) {
-          if (currentUser) {
-            localStorage.setItem(STORAGE_USER, JSON.stringify(currentUser))
-            setUser(currentUser)
-          } else {
-            localStorage.removeItem(STORAGE_USER)
-            setUser(null)
-          }
-        }
-      } catch {
-        if (isMounted) {
-          localStorage.removeItem(STORAGE_USER)
-          setUser(null)
-        }
-      } finally {
-        if (isMounted) setAuthChecked(true)
-      }
-    }
-
-    verifySession()
-
-    return () => {
-      isMounted = false
-    }
-  }, [])
+  const [authChecked] = useState(true)
 
   const handleLogin = async ({ email, password }) => {
     try {

@@ -20,7 +20,7 @@ class CategoryAdmin(admin.ModelAdmin):
 
 @admin.register(Consommation)
 class ConsommationAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "category", "value", "price", "date_consommation")
+    list_display = ("id", "user", "category", "value", "unit_price", "date_consommation")
     list_filter = ("category",)
     search_fields = ("user__email", "category__name")
     ordering = ("-date_consommation",)
@@ -36,7 +36,7 @@ class AlertAdmin(admin.ModelAdmin):
 
 @admin.register(Notification)
 class NotificationAdmin(admin.ModelAdmin):
-    list_display = ("id", "user", "alert", "created_at")
-    list_filter = ("created_at",)
+    list_display = ("id", "user", "alert", "type", "read", "created_at")
+    list_filter = ("created_at", "read", "type")
     search_fields = ("user__email", "alert__message")
     ordering = ("-created_at",)

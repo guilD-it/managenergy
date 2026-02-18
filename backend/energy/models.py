@@ -26,7 +26,7 @@ class Consommation(models.Model):
         Category, on_delete=models.PROTECT, related_name="consommations"
     )
     value = models.DecimalField(max_digits=12, decimal_places=2)
-    price = models.DecimalField(max_digits=12, decimal_places=2)
+    unit_price = models.DecimalField(max_digits=12, decimal_places=4)
     date_consommation = models.DateTimeField()
 
     def __str__(self) -> str:
@@ -51,6 +51,8 @@ class Notification(models.Model):
     alert = models.OneToOneField(
         Alert, on_delete=models.CASCADE, related_name="notification"
     )
+    type = models.CharField(max_length=30, default="alert")
+    read = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:

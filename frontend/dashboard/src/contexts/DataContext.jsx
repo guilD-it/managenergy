@@ -12,17 +12,25 @@ const DataContext = createContext(null)
 
 const toDateInput = (dateValue) => {
   if (!dateValue) return ''
+  // Preserve server calendar day (YYYY-MM-DD) without timezone conversion.
+  if (typeof dateValue === 'string' && dateValue.length >= 10) {
+    const candidate = dateValue.slice(0, 10)
+    if (/^\d{4}-\d{2}-\d{2}$/.test(candidate)) return candidate
+  }
   const date = new Date(dateValue)
   if (Number.isNaN(date.getTime())) return ''
-  return date.toISOString().slice(0, 10)
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(
+    date.getDate()
+  ).padStart(2, '0')}`
 }
 
+// Keep frontend model aligned with API payload shape.
 const mapConsumption = (item) => ({
   id: item.id,
   date: toDateInput(item.date_consommation),
   energyType: item.category,
   quantity: Number(item.value ?? 0),
-  cost: Number(item.price ?? 0),
+  unitPrice: Number(item.unit_price ?? 0),
 })
 
 export function DataProvider({ children }) {
@@ -33,13 +41,16 @@ export function DataProvider({ children }) {
   const [error, setError] = useState('')
   const [loaded, setLoaded] = useState(false)
 
-  const loadData = async () => {
+  const loadData = async (force = false) => {
     if (!user) {
       setItems([])
       setCategories([])
       setLoaded(false)
       return
     }
+    if (loading) return
+    // Avoid duplicate calls unless an explicit refresh is requested after CRUD.
+    if (loaded && !force) return
 
     setLoading(true)
     setError('')
@@ -63,11 +74,11 @@ export function DataProvider({ children }) {
     const apiPayload = {
       category: payload.energyType,
       value: payload.quantity,
-      price: payload.cost,
+      unit_price: payload.unitPrice,
       date_consommation: new Date(payload.date).toISOString(),
     }
     await createConsumption(apiPayload)
-    await loadData()
+    await loadData(true)
   }
 
   const updateItem = async (id, payload) => {
@@ -75,17 +86,17 @@ export function DataProvider({ children }) {
     const apiPayload = {
       category: payload.energyType,
       value: payload.quantity,
-      price: payload.cost,
+      unit_price: payload.unitPrice,
       date_consommation: new Date(payload.date).toISOString(),
     }
     await updateConsumption(id, apiPayload)
-    await loadData()
+    await loadData(true)
   }
 
   const deleteItem = async (id) => {
     setError('')
     await deleteConsumption(id)
-    await loadData()
+    await loadData(true)
   }
 
   const value = useMemo(

@@ -9,6 +9,7 @@ from .views import (
     UserViewSet,
     activate_account,
     csrf,
+    generate_consumptions,
     login,
     logout,
     register,
@@ -28,5 +29,6 @@ urlpatterns = [
     path("activate/", activate_account, name="activate-account"),
     path("login/", login, name="login"),
     path("logout/", logout, name="logout"),
+    path("generate-consumptions/", generate_consumptions, name="generate-consumptions"),
     path("", include(router.urls)),
 ]

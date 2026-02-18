@@ -53,7 +53,7 @@ function App() {
               <Route path="/consommations/ajouter" element={<ConsumptionForm />} />
               <Route path="/consommations/:id/modifier" element={<ConsumptionForm />} />
               <Route path="/graphiques" element={<Charts />} />
-              <Route path="/notifications" element={<Notifications />} />
+              <Route path="/alertes" element={<Notifications />} />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

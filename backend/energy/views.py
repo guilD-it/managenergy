@@ -1,5 +1,7 @@
 import json
 import secrets
+import random
+from datetime import datetime, timedelta
 
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.hashers import check_password, make_password
@@ -52,6 +54,20 @@ def register(request):
 
     if not email or not password:
         return JsonResponse({"detail": "Email and password are required."}, status=400)
+    if len(password) < 8:
+        return JsonResponse(
+            {"detail": "Password must be at least 8 characters."}, status=400
+        )
+    if not any(char.isupper() for char in password):
+        return JsonResponse(
+            {"detail": "Password must contain at least one uppercase letter."},
+            status=400,
+        )
+    if not any(char.isdigit() for char in password):
+        return JsonResponse(
+            {"detail": "Password must contain at least one number."},
+            status=400,
+        )
 
     if User.objects.filter(email=email).exists():
         return JsonResponse({"detail": "Email already registered."}, status=409)
@@ -81,6 +97,94 @@ def session_required(view_func):
         return view_func(request, *args, **kwargs)
 
     return _wrapped
+
+
+@csrf_exempt
+@session_required
+def generate_consumptions(request):
+    """
+    POST /api/v1/generate-consumptions/
+    Auth: session (login required)
+    Body: { "count": 90, "user_id": 1, "start_date": "18/02/2026" }
+    Returns: 201 + {created}
+    Description: Seed random consumptions for each category.
+    """
+    if request.method != "POST":
+        return JsonResponse({"detail": "Method not allowed."}, status=405)
+
+    try:
+        payload = json.loads(request.body.decode("utf-8"))
+    except json.JSONDecodeError:
+        return JsonResponse({"detail": "Invalid JSON."}, status=400)
+
+    count = payload.get("count")
+    user_id = payload.get("user_id")
+    start_date = payload.get("start_date")
+
+    if not isinstance(count, int) or count <= 0:
+        return JsonResponse({"detail": "Count must be a positive integer."}, status=400)
+    if not user_id:
+        return JsonResponse({"detail": "user_id is required."}, status=400)
+    if not start_date:
+        return JsonResponse({"detail": "start_date is required."}, status=400)
+
+    try:
+        start = datetime.strptime(start_date, "%d/%m/%Y")
+    except ValueError:
+        return JsonResponse(
+            {"detail": "start_date must be in DD/MM/YYYY format."}, status=400
+        )
+
+    try:
+        user = User.objects.get(id=user_id)
+    except User.DoesNotExist:
+        return JsonResponse({"detail": "User not found."}, status=404)
+
+    categories = list(Category.objects.all().order_by("id"))
+    if not categories:
+        return JsonResponse({"detail": "No categories available."}, status=400)
+
+    def get_ranges(category_name, day_index):
+        name = (category_name or "").lower()
+        if "gaz" in name:
+            if day_index < 90:
+                return (25, 50)
+            return (5, 25)
+        if "eau" in name:
+            return (150, 500)
+        if "electric" in name:
+            return (3.3, 6.7)
+        return (100, 500)
+
+    def get_unit_price(category_name):
+        name = (category_name or "").lower()
+        if "gaz" in name:
+            return round(random.uniform(0.05, 0.12), 4)
+        if "eau" in name:
+            return round(random.uniform(0.001, 0.005), 4)
+        if "electric" in name:
+            return round(random.uniform(0.12, 0.25), 4)
+        return round(random.uniform(0.05, 0.2), 4)
+
+    to_create = []
+    for category in categories:
+        for i in range(count):
+            date_value = start + timedelta(days=i)
+            min_value, max_value = get_ranges(category.name, i)
+            value = round(random.uniform(min_value, max_value), 2)
+            unit_price = get_unit_price(category.name)
+            to_create.append(
+                Consommation(
+                    user=user,
+                    category=category,
+                    value=value,
+                    unit_price=unit_price,
+                    date_consommation=date_value,
+                )
+            )
+
+    Consommation.objects.bulk_create(to_create)
+    return JsonResponse({"created": len(to_create)}, status=201)
 
 
 @csrf_exempt
@@ -251,7 +355,7 @@ class ConsommationViewSet(viewsets.ModelViewSet):
     GET/POST /api/v1/consommations/
     GET/PUT/PATCH/DELETE /api/v1/consommations/{id}/
     Auth: none
-    Body (POST/PUT/PATCH): Consommation fields (user, category, value, price, date_consommation)
+    Body (POST/PUT/PATCH): Consommation fields (user, category, value, unit_price, date_consommation)
     Returns: Consommation object(s)
     Description: CRUD for consommation data.
     """
@@ -285,7 +389,17 @@ class ConsommationViewSet(viewsets.ModelViewSet):
         user = _get_session_user(self.request)
         if user is None:
             raise PermissionDenied("Authentication required.")
-        serializer.save(user=user)
+        consommation = serializer.save(user=user)
+
+        # Auto-create a notification if the consumption exceeds an active alert.
+        alerts = Alert.objects.filter(
+            user=user,
+            category=consommation.category,
+            status__iexact="active",
+        )
+        for alert in alerts:
+            if consommation.value >= alert.limit:
+                Notification.objects.get_or_create(user=user, alert=alert)
 
 
 class AlertViewSet(viewsets.ModelViewSet):

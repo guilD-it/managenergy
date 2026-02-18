@@ -51,6 +51,12 @@ a:hover {
   letter-spacing: 0.4px;
 }
 
+.brand-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+}
+
 .text-white-75 {
   color: rgba(255, 255, 255, 0.75);
 }
@@ -66,6 +72,75 @@ a:hover {
 
 .logout-link:hover {
   color: #e2e8f0;
+}
+
+.notif-wrapper {
+  position: relative;
+}
+
+.notif-button {
+  position: relative;
+  border: none;
+  background: transparent;
+  color: white;
+  padding: 0;
+  font-size: 1.2rem;
+}
+
+.notif-icon {
+  display: inline-block;
+}
+
+.notif-badge {
+  position: absolute;
+  top: -6px;
+  right: -10px;
+  background: #3b82f6;
+  color: white;
+  border-radius: 999px;
+  font-size: 0.65rem;
+  padding: 2px 6px;
+}
+
+.notif-panel {
+  position: absolute;
+  right: 0;
+  top: 36px;
+  width: 280px;
+  background: white;
+  color: #0f172a;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.2);
+  z-index: 30;
+}
+
+.notif-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.notif-item {
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 8px;
+  margin-top: 8px;
+}
+
+.notif-item.is-read {
+  opacity: 0.6;
+  background: #f8fafc;
+}
+
+.notif-title {
+  font-weight: 600;
+}
+
+.notif-meta {
+  font-size: 0.75rem;
+  color: #64748b;
 }
 
 .btn-primary {
@@ -129,6 +204,27 @@ a:hover {
 
 .table > :not(caption) > * > * {
   background: transparent;
+}
+
+.table-sort {
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.table-sort:hover {
+  color: #3b82f6;
+}
+
+.icon-btn {
+  min-width: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 
 @media (max-width: 768px) {

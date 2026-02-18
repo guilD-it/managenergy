@@ -6,7 +6,7 @@ const buildEmptyForm = (defaultCategoryId) => ({
   date: '',
   energyType: defaultCategoryId || '',
   quantity: '',
-  cost: '',
+  unitPrice: '',
 })
 
 const getCategoryById = (categories, id) =>
@@ -43,7 +43,7 @@ export default function ConsumptionForm() {
         date: editingItem.date,
         energyType: editingItem.energyType,
         quantity: String(editingItem.quantity),
-        cost: String(editingItem.cost),
+        unitPrice: String(editingItem.unitPrice),
       })
     } else if (!isEditing) {
       setForm(buildEmptyForm(categories[0]?.id))
@@ -65,7 +65,7 @@ export default function ConsumptionForm() {
       date: form.date,
       energyType: form.energyType,
       quantity: Number(form.quantity),
-      cost: Number(form.cost),
+      unitPrice: Number(form.unitPrice),
     }
 
     try {
@@ -195,13 +195,13 @@ export default function ConsumptionForm() {
                   </div>
                 </div>
                 <div className="mb-3">
-                  <label className="form-label">Cout (EUR)</label>
+                  <label className="form-label">Prix unitaire (EUR)</label>
                   <input
                     type="number"
-                    step="0.01"
-                    name="cost"
+                    step="0.0001"
+                    name="unitPrice"
                     className="form-control"
-                    value={form.cost}
+                    value={form.unitPrice}
                     onChange={handleChange}
                     required
                   />

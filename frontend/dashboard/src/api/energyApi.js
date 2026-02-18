@@ -23,11 +23,6 @@ export const logout = () =>
     method: 'POST',
   })
 
-export const fetchCurrentUser = async () => {
-  const users = await apiRequest('/users/')
-  return Array.isArray(users) && users.length ? users[0] : null
-}
-
 export const fetchCategories = () => apiRequest('/categories/')
 
 export const fetchConsumptions = () => apiRequest('/consommations/')
@@ -76,7 +71,8 @@ export const createNotification = (payload) =>
     body: JSON.stringify(payload),
   })
 
-export const deleteNotification = (id) =>
+export const updateNotification = (id, payload) =>
   apiRequest(`/notifications/${id}/`, {
-    method: 'DELETE',
+    method: 'PATCH',
+    body: JSON.stringify(payload),
   })

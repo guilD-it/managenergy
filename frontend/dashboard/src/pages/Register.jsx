@@ -2,6 +2,19 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../contexts/AuthContext.jsx'
 
+const validatePassword = (value) => {
+  if (!value || value.length < 8) {
+    return 'Le mot de passe doit contenir au moins 8 caracteres.'
+  }
+  if (!/[A-Z]/.test(value)) {
+    return 'Le mot de passe doit contenir au moins une majuscule.'
+  }
+  if (!/[0-9]/.test(value)) {
+    return 'Le mot de passe doit contenir au moins un chiffre.'
+  }
+  return ''
+}
+
 export default function Register() {
   const { register } = useAuth()
   const navigate = useNavigate()
@@ -11,13 +24,20 @@ export default function Register() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [loading, setLoading] = useState(false)
+  const [passwordError, setPasswordError] = useState('')
+  const [confirmError, setConfirmError] = useState('')
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
     setSuccess('')
+    const pwdError = validatePassword(password)
+    if (pwdError) {
+      setPasswordError(pwdError)
+      return
+    }
     if (password !== confirm) {
-      setError('Les mots de passe ne correspondent pas.')
+      setConfirmError('Les mots de passe ne correspondent pas.')
       return
     }
 
@@ -59,9 +79,21 @@ export default function Register() {
                 type="password"
                 className="form-control"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  const next = e.target.value
+                  setPassword(next)
+                  setPasswordError(validatePassword(next))
+                  if (confirm && next !== confirm) {
+                    setConfirmError('Les mots de passe ne correspondent pas.')
+                  } else {
+                    setConfirmError('')
+                  }
+                }}
                 required
               />
+              {passwordError ? (
+                <div className="text-danger small mt-1">{passwordError}</div>
+              ) : null}
             </div>
             <div className="mb-3">
               <label className="form-label">Confirmer le mot de passe</label>
@@ -69,16 +101,27 @@ export default function Register() {
                 type="password"
                 className="form-control"
                 value={confirm}
-                onChange={(e) => setConfirm(e.target.value)}
+                onChange={(e) => {
+                  const next = e.target.value
+                  setConfirm(next)
+                  if (password && next !== password) {
+                    setConfirmError('Les mots de passe ne correspondent pas.')
+                  } else {
+                    setConfirmError('')
+                  }
+                }}
                 required
               />
+              {confirmError ? (
+                <div className="text-danger small mt-1">{confirmError}</div>
+              ) : null}
             </div>
             {error ? <div className="alert alert-danger py-2">{error}</div> : null}
             {success ? <div className="alert alert-success py-2">{success}</div> : null}
             <button
               type="submit"
               className="btn btn-primary w-100"
-              disabled={loading}
+              disabled={loading || Boolean(passwordError || confirmError)}
             >
               {loading ? 'Creation...' : 'Creer le compte'}
             </button>
