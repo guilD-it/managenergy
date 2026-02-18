@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -26,8 +26,14 @@ const getCategoryById = (categories, id) =>
   categories.find((category) => String(category.id) === String(id))
 
 export default function Charts() {
-  const { items, categories, loading, error } = useData()
+  const { items, categories, loading, error, loaded, refresh } = useData()
   const [typeFilter, setTypeFilter] = useState('all')
+
+  useEffect(() => {
+    if (!loaded) {
+      refresh()
+    }
+  }, [loaded, refresh])
 
   // Filter by energy type to keep units consistent in charts.
   const filteredItems = useMemo(() => {

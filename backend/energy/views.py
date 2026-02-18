@@ -84,7 +84,6 @@ def session_required(view_func):
 
 
 @csrf_exempt
-@session_required
 def activate_account(request):
     """
     POST /api/v1/activate/
@@ -302,6 +301,18 @@ class AlertViewSet(viewsets.ModelViewSet):
     serializer_class = AlertSerializer
     permission_classes = [SessionAuthenticated]
 
+    def get_queryset(self):
+        session_user_id = _get_session_user_id(self.request)
+        if not session_user_id:
+            return Alert.objects.none()
+        return Alert.objects.filter(user_id=session_user_id).order_by("-id")
+
+    def perform_create(self, serializer):
+        user = _get_session_user(self.request)
+        if user is None:
+            raise PermissionDenied("Authentication required.")
+        serializer.save(user=user)
+
 
 class NotificationViewSet(viewsets.ModelViewSet):
     """
@@ -315,3 +326,20 @@ class NotificationViewSet(viewsets.ModelViewSet):
     queryset = Notification.objects.select_related("user", "alert").all()
     serializer_class = NotificationSerializer
     permission_classes = [SessionAuthenticated]
+
+    def get_queryset(self):
+        session_user_id = _get_session_user_id(self.request)
+        if not session_user_id:
+            return Notification.objects.none()
+        return Notification.objects.filter(user_id=session_user_id).select_related(
+            "user", "alert"
+        )
+
+    def perform_create(self, serializer):
+        user = _get_session_user(self.request)
+        if user is None:
+            raise PermissionDenied("Authentication required.")
+        alert = serializer.validated_data.get("alert")
+        if alert and alert.user_id != user.id:
+            raise PermissionDenied("Cannot attach alert from another user.")
+        serializer.save(user=user)

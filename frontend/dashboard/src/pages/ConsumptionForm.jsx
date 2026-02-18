@@ -15,7 +15,8 @@ const getCategoryById = (categories, id) =>
 export default function ConsumptionForm() {
   const { id } = useParams()
   const navigate = useNavigate()
-  const { items, categories, loading, error, addItem, updateItem } = useData()
+  const { items, categories, loading, error, loaded, refresh, addItem, updateItem } =
+    useData()
 
   const editingItem = useMemo(
     () => items.find((item) => String(item.id) === String(id)),
@@ -29,6 +30,12 @@ export default function ConsumptionForm() {
     buildEmptyForm(categories[0]?.id)
   )
   const [submitError, setSubmitError] = useState('')
+
+  useEffect(() => {
+    if (!loaded) {
+      refresh()
+    }
+  }, [loaded, refresh])
 
   useEffect(() => {
     if (editingItem) {

@@ -34,12 +34,16 @@ class Consommation(models.Model):
 
 
 class Alert(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="alerts")
+    category = models.ForeignKey(
+        Category, on_delete=models.PROTECT, related_name="alerts"
+    )
     limit = models.DecimalField(max_digits=12, decimal_places=2)
     status = models.CharField(max_length=30, default="active")
     message = models.CharField(max_length=255)
 
     def __str__(self) -> str:
-        return self.message
+        return f"{self.user.email} - {self.category.name} - {self.message}"
 
 
 class Notification(models.Model):

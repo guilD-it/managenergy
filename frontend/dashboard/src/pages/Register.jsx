@@ -31,7 +31,7 @@ export default function Register() {
     }
 
     setSuccess(result.message)
-    setTimeout(() => navigate('/login'), 1200)
+    setTimeout(() => navigate('/activate'), 1200)
   }
 
   return (
@@ -85,6 +85,9 @@ export default function Register() {
           </form>
           <div className="small text-muted mt-3">
             Deja un compte ? <Link to="/login">Se connecter</Link>
+          </div>
+          <div className="small mt-2">
+            <Link to="/activate">Activer un compte</Link>
           </div>
           <div className="small mt-2">
             <Link to="/">Retour a l'accueil</Link>

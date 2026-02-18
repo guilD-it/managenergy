@@ -33,10 +33,18 @@ class ConsommationSerializer(serializers.ModelSerializer):
 class AlertSerializer(serializers.ModelSerializer):
     class Meta:
         model = Alert
-        fields = ["id", "limit", "status", "message"]
+        fields = ["id", "user", "category", "limit", "status", "message"]
+        extra_kwargs = {"user": {"read_only": True}}
 
 
 class NotificationSerializer(serializers.ModelSerializer):
+    def validate_alert(self, alert):
+        if getattr(alert, "status", "").lower() == "inactive":
+            raise serializers.ValidationError(
+                "Cannot attach an inactive alert to a notification."
+            )
+        return alert
+
     class Meta:
         model = Notification
         fields = ["id", "user", "alert", "created_at"]

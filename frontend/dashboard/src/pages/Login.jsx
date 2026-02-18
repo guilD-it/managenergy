@@ -65,6 +65,9 @@ export default function Login() {
             Pas de compte ? <Link to="/register">Creer un compte</Link>
           </div>
           <div className="small mt-2">
+            <Link to="/activate">Activer un compte</Link>
+          </div>
+          <div className="small mt-2">
             <Link to="/">Retour a l'accueil</Link>
           </div>
         </div>

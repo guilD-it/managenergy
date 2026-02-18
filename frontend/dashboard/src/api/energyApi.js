@@ -12,6 +12,12 @@ export const register = (payload) =>
     body: JSON.stringify(payload),
   })
 
+export const activateAccount = (payload) =>
+  apiRequest('/activate/', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+
 export const logout = () =>
   apiRequest('/logout/', {
     method: 'POST',

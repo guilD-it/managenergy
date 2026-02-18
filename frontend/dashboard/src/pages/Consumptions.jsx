@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useData } from '../contexts/DataContext.jsx'
 
@@ -6,9 +6,15 @@ const getCategoryById = (categories, id) =>
   categories.find((category) => String(category.id) === String(id))
 
 export default function Consumptions() {
-  const { items, categories, loading, error, deleteItem } = useData()
+  const { items, categories, loading, error, loaded, refresh, deleteItem } = useData()
   const [search, setSearch] = useState('')
   const [typeFilter, setTypeFilter] = useState('all')
+
+  useEffect(() => {
+    if (!loaded) {
+      refresh()
+    }
+  }, [loaded, refresh])
 
   // Filtering is client-side for now (simple and fast for small datasets).
   const filteredItems = useMemo(() => {

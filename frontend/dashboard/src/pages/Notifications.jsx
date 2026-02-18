@@ -4,6 +4,7 @@ import {
   createNotification,
   deleteAlert,
   deleteNotification,
+  fetchCategories,
   fetchAlerts,
   fetchNotifications,
   updateAlert,
@@ -11,6 +12,7 @@ import {
 import { useAuth } from '../contexts/AuthContext.jsx'
 
 const emptyForm = {
+  category: '',
   limit: '',
   status: 'active',
   message: '',
@@ -18,23 +20,37 @@ const emptyForm = {
 
 export default function Notifications() {
   const { user } = useAuth()
+  const [categories, setCategories] = useState([])
   const [alerts, setAlerts] = useState([])
   const [notifications, setNotifications] = useState([])
   const [form, setForm] = useState(emptyForm)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [editingId, setEditingId] = useState(null)
+  const [categoryFilter, setCategoryFilter] = useState('all')
+  const [loaded, setLoaded] = useState(false)
 
   const loadData = async () => {
+    if (!user) {
+      setCategories([])
+      setAlerts([])
+      setNotifications([])
+      setLoaded(false)
+      return
+    }
+
     setLoading(true)
     setError('')
     try {
-      const [alertsData, notificationsData] = await Promise.all([
+      const [categoriesData, alertsData, notificationsData] = await Promise.all([
+        fetchCategories(),
         fetchAlerts(),
         fetchNotifications(),
       ])
+      setCategories(categoriesData || [])
       setAlerts(alertsData || [])
       setNotifications(notificationsData || [])
+      setLoaded(true)
     } catch (err) {
       setError(err.data?.detail || err.message)
     } finally {
@@ -43,13 +59,30 @@ export default function Notifications() {
   }
 
   useEffect(() => {
-    loadData()
-  }, [])
+    if (!loaded) {
+      loadData()
+    }
+  }, [loaded, user])
 
   const userNotifications = useMemo(() => {
     if (!user) return []
     return notifications.filter((n) => String(n.user) === String(user.id))
   }, [notifications, user])
+
+  const filteredAlerts = useMemo(() => {
+    if (categoryFilter === 'all') return alerts
+    return alerts.filter(
+      (alert) => String(alert.category) === String(categoryFilter)
+    )
+  }, [alerts, categoryFilter])
+
+  const filteredNotifications = useMemo(() => {
+    if (categoryFilter === 'all') return userNotifications
+    return userNotifications.filter((notification) => {
+      const alert = alerts.find((entry) => entry.id === notification.alert)
+      return String(alert?.category) === String(categoryFilter)
+    })
+  }, [userNotifications, alerts, categoryFilter])
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -59,6 +92,7 @@ export default function Notifications() {
   const handleEdit = (alert) => {
     setEditingId(alert.id)
     setForm({
+      category: alert.category,
       limit: String(alert.limit),
       status: alert.status,
       message: alert.message,
@@ -74,6 +108,7 @@ export default function Notifications() {
     e.preventDefault()
     setError('')
     const payload = {
+      category: form.category,
       limit: Number(form.limit),
       status: form.status,
       message: form.message.trim(),
@@ -83,7 +118,11 @@ export default function Notifications() {
       if (editingId) {
         await updateAlert(editingId, payload)
       } else {
-        await createAlert(payload)
+        const created = await createAlert(payload)
+        // Auto-attach the new alert for the current user.
+        if (created?.id) {
+          await createNotification({ alert: created.id })
+        }
       }
       setForm(emptyForm)
       setEditingId(null)
@@ -107,7 +146,7 @@ export default function Notifications() {
     if (!user) return
     setError('')
     try {
-      await createNotification({ user: user.id, alert: alertId })
+      await createNotification({ alert: alertId })
       await loadData()
     } catch (err) {
       setError(err.data?.detail || err.message)
@@ -145,6 +184,28 @@ export default function Notifications() {
 
       {error ? <div className="alert alert-danger">{error}</div> : null}
 
+      <div className="card border-0 shadow-sm mb-4">
+        <div className="card-body">
+          <div className="d-flex flex-wrap gap-3 align-items-end">
+            <div>
+              <label className="form-label">Filtrer par categorie</label>
+              <select
+                className="form-select"
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+              >
+                <option value="all">Toutes</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>
+                    {category.name} ({category.unit})
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="row g-4">
         <div className="col-12 col-lg-5">
           <div className="card border-0 shadow-sm">
@@ -153,6 +214,23 @@ export default function Notifications() {
                 {editingId ? 'Modifier une alerte' : 'Nouvelle alerte'}
               </h2>
               <form onSubmit={handleSubmit}>
+                <div className="mb-3">
+                  <label className="form-label">Categorie</label>
+                  <select
+                    name="category"
+                    className="form-select"
+                    value={form.category}
+                    onChange={handleChange}
+                    required
+                  >
+                    <option value="">Selectionner</option>
+                    {categories.map((category) => (
+                      <option key={category.id} value={category.id}>
+                        {category.name} ({category.unit})
+                      </option>
+                    ))}
+                  </select>
+                </div>
                 <div className="mb-3">
                   <label className="form-label">Seuil</label>
                   <input
@@ -215,6 +293,7 @@ export default function Notifications() {
                 <table className="table align-middle">
                   <thead>
                     <tr>
+                      <th>Categorie</th>
                       <th>Message</th>
                       <th>Seuil</th>
                       <th>Statut</th>
@@ -222,8 +301,14 @@ export default function Notifications() {
                     </tr>
                   </thead>
                   <tbody>
-                    {alerts.map((alert) => (
+                    {filteredAlerts.map((alert) => (
                       <tr key={alert.id}>
+                        <td>
+                          {categories.find(
+                            (category) =>
+                              String(category.id) === String(alert.category)
+                          )?.name || '—'}
+                        </td>
                         <td>{alert.message}</td>
                         <td>{alert.limit}</td>
                         <td>{alert.status}</td>
@@ -253,7 +338,7 @@ export default function Notifications() {
                     ))}
                     {!alerts.length ? (
                       <tr>
-                        <td colSpan="4" className="text-center text-muted py-4">
+                        <td colSpan="5" className="text-center text-muted py-4">
                           Aucune alerte configuree.
                         </td>
                       </tr>
@@ -277,13 +362,19 @@ export default function Notifications() {
                     </tr>
                   </thead>
                   <tbody>
-                    {userNotifications.map((notification) => {
+                    {filteredNotifications.map((notification) => {
                       const alert = alerts.find(
                         (entry) => entry.id === notification.alert
                       )
+                      const category = categories.find(
+                        (entry) => entry.id === alert?.category
+                      )
                       return (
                         <tr key={notification.id}>
-                          <td>{alert?.message || 'Alerte inconnue'}</td>
+                          <td>
+                            {alert?.message || 'Alerte inconnue'}
+                            {category ? ` (${category.name})` : ''}
+                          </td>
                           <td>{new Date(notification.created_at).toLocaleDateString()}</td>
                           <td className="text-end">
                             <button

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useContext, useMemo, useState } from 'react'
 import {
   createConsumption,
   deleteConsumption,
@@ -31,11 +31,13 @@ export function DataProvider({ children }) {
   const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [loaded, setLoaded] = useState(false)
 
   const loadData = async () => {
     if (!user) {
       setItems([])
       setCategories([])
+      setLoaded(false)
       return
     }
 
@@ -48,16 +50,13 @@ export function DataProvider({ children }) {
       ])
       setCategories(categoriesData || [])
       setItems((consumptionsData || []).map(mapConsumption))
+      setLoaded(true)
     } catch (err) {
       setError(err.data?.detail || err.message)
     } finally {
       setLoading(false)
     }
   }
-
-  useEffect(() => {
-    loadData()
-  }, [user])
 
   const addItem = async (payload) => {
     setError('')
@@ -95,12 +94,13 @@ export function DataProvider({ children }) {
       categories,
       loading,
       error,
+      loaded,
       refresh: loadData,
       addItem,
       updateItem,
       deleteItem,
     }),
-    [items, categories, loading, error]
+    [items, categories, loading, error, loaded]
   )
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>

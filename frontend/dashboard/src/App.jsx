@@ -6,6 +6,7 @@ import MinimalLayout from './layouts/MinimalLayout.jsx'
 import Home from './pages/Home.jsx'
 import Login from './pages/Login.jsx'
 import Register from './pages/Register.jsx'
+import ActivateAccount from './pages/ActivateAccount.jsx'
 import Consumptions from './pages/Consumptions.jsx'
 import ConsumptionForm from './pages/ConsumptionForm.jsx'
 import Charts from './pages/Charts.jsx'
@@ -34,12 +35,13 @@ function App() {
         <BrowserRouter>
           <Routes>
             <Route element={<MinimalLayout />}>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/connexion" element={<Navigate to="/login" replace />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/inscription" element={<Navigate to="/register" replace />} />
-            </Route>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/connexion" element={<Navigate to="/login" replace />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/inscription" element={<Navigate to="/register" replace />} />
+            <Route path="/activate" element={<ActivateAccount />} />
+          </Route>
             <Route
               element={
                 <ProtectedRoute>

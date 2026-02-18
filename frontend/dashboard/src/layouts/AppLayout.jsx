@@ -17,10 +17,10 @@ export default function AppLayout() {
   return (
     <div className="app-shell d-flex flex-column min-vh-100">
       <header className="app-header">
-        <div className="container py-3 d-flex align-items-center justify-content-between">
-          <div className="d-flex align-items-center gap-3">
+        <div className="container py-3 d-flex flex-column flex-lg-row align-items-start align-items-lg-center justify-content-between gap-3">
+          <div className="d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-3 w-100 w-lg-auto">
             <div className="brand">Managenergy</div>
-            <nav className="nav">
+            <nav className="nav app-nav flex-wrap">
               <NavLink to="/consommations" className={linkClass}>
                 Consommations
               </NavLink>
@@ -32,8 +32,8 @@ export default function AppLayout() {
               </NavLink>
             </nav>
           </div>
-          <div className="d-flex align-items-center gap-3 text-white flex-wrap justify-content-end">
-            <span className="small">{user?.email}</span>
+          <div className="d-flex align-items-center gap-3 text-white flex-wrap justify-content-between w-100 w-lg-auto">
+            <span className="small text-truncate">{user?.email}</span>
             <button className="logout-link" onClick={handleLogout}>
               Deconnexion
             </button>
