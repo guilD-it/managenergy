@@ -4,7 +4,7 @@ import secrets
 from django.contrib.auth import logout as django_logout
 from django.contrib.auth.hashers import check_password, make_password
 from django.http import JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.csrf import csrf_exempt, ensure_csrf_cookie
 from rest_framework import viewsets
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import BasePermission
@@ -17,6 +17,17 @@ from .serializers import (
     NotificationSerializer,
     UserSerializer,
 )
+
+
+@ensure_csrf_cookie
+def csrf(request):
+    """
+    GET /api/v1/csrf/
+    Auth: none
+    Returns: 200 + {detail}
+    Description: Set CSRF cookie for SPA clients.
+    """
+    return JsonResponse({"detail": "CSRF cookie set."}, status=200)
 
 
 @csrf_exempt

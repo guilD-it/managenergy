@@ -8,6 +8,7 @@ from .views import (
     NotificationViewSet,
     UserViewSet,
     activate_account,
+    csrf,
     login,
     logout,
     register,
@@ -22,6 +23,7 @@ router.register(r"alerts", AlertViewSet)
 router.register(r"notifications", NotificationViewSet)
 
 urlpatterns = [
+    path("csrf/", csrf, name="csrf"),
     path("register/", register, name="register"),
     path("activate/", activate_account, name="activate-account"),
     path("login/", login, name="login"),

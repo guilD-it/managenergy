@@ -1,34 +1,63 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { AuthProvider, useAuth } from './contexts/AuthContext.jsx'
+import { DataProvider } from './contexts/DataContext.jsx'
+import AppLayout from './layouts/AppLayout.jsx'
+import MinimalLayout from './layouts/MinimalLayout.jsx'
+import Home from './pages/Home.jsx'
+import Login from './pages/Login.jsx'
+import Register from './pages/Register.jsx'
+import Consumptions from './pages/Consumptions.jsx'
+import ConsumptionForm from './pages/ConsumptionForm.jsx'
+import Charts from './pages/Charts.jsx'
+import Notifications from './pages/Notifications.jsx'
+import NotFound from './pages/NotFound.jsx'
+
+function ProtectedRoute({ children }) {
+  const { user, authChecked } = useAuth()
+  if (!authChecked) {
+    return (
+      <div className="container py-5">
+        <div className="card border-0 shadow-sm">
+          <div className="card-body p-4">Chargement...</div>
+        </div>
+      </div>
+    )
+  }
+  if (!user) return <Navigate to="/login" replace />
+  return children
+}
 
 function App() {
-  const [count, setCount] = useState(0)
-
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <AuthProvider>
+      <DataProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route element={<MinimalLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/connexion" element={<Navigate to="/login" replace />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/inscription" element={<Navigate to="/register" replace />} />
+            </Route>
+            <Route
+              element={
+                <ProtectedRoute>
+                  <AppLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route path="/consommations" element={<Consumptions />} />
+              <Route path="/consommations/ajouter" element={<ConsumptionForm />} />
+              <Route path="/consommations/:id/modifier" element={<ConsumptionForm />} />
+              <Route path="/graphiques" element={<Charts />} />
+              <Route path="/notifications" element={<Notifications />} />
+            </Route>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </DataProvider>
+    </AuthProvider>
   )
 }
 

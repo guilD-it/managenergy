@@ -27,6 +27,7 @@ class ConsommationSerializer(serializers.ModelSerializer):
             "price",
             "date_consommation",
         ]
+        extra_kwargs = {"user": {"read_only": True}}
 
 
 class AlertSerializer(serializers.ModelSerializer):
@@ -39,3 +40,4 @@ class NotificationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Notification
         fields = ["id", "user", "alert", "created_at"]
+        extra_kwargs = {"user": {"read_only": True}}
