@@ -368,6 +368,8 @@ class ConsommationViewSet(viewsets.ModelViewSet):
         session_user_id = _get_session_user_id(self.request)
         if session_user_id:
             queryset = queryset.filter(user_id=session_user_id)
+        else:
+            return queryset.none()
 
         consommation_id = self.request.query_params.get("id")
         category_id = self.request.query_params.get("category")

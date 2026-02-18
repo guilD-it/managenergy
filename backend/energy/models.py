@@ -1,4 +1,5 @@
 from django.db import models
+from decimal import Decimal, ROUND_HALF_UP
 
 
 class User(models.Model):
@@ -28,6 +29,13 @@ class Consommation(models.Model):
     value = models.DecimalField(max_digits=12, decimal_places=2)
     unit_price = models.DecimalField(max_digits=12, decimal_places=4)
     date_consommation = models.DateTimeField()
+
+    @property
+    def total_price(self) -> Decimal:
+        # Monetary values are rounded to 2 decimals for display/reporting.
+        return (self.value * self.unit_price).quantize(
+            Decimal("0.01"), rounding=ROUND_HALF_UP
+        )
 
     def __str__(self) -> str:
         return f"{self.user.email} - {self.category.name}"

@@ -1,4 +1,4 @@
-import { createContext, useContext, useMemo, useState } from 'react'
+import { createContext, useContext, useEffect, useMemo, useState } from 'react'
 import {
   createConsumption,
   deleteConsumption,
@@ -40,6 +40,14 @@ export function DataProvider({ children }) {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [loaded, setLoaded] = useState(false)
+
+  useEffect(() => {
+    // Reset cached data when auth identity changes.
+    setItems([])
+    setCategories([])
+    setError('')
+    setLoaded(false)
+  }, [user?.id])
 
   const loadData = async (force = false) => {
     if (!user) {
