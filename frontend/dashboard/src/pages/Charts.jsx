@@ -150,37 +150,6 @@ export default function Charts() {
     )
   }, [dateScopedItems, typeFilter])
 
-  useEffect(() => {
-    if (groupBy === 'day') {
-      console.log('[Charts] Day filter applied', {
-        selectedMonth,
-        typeFilter,
-        scopedCount: dateScopedItems.length,
-        filteredCount: filteredItems.length,
-      })
-      console.log(
-        '[Charts] Day items',
-        dateScopedItems.map((item) => ({
-          id: item.id,
-          date: item.date,
-          energyType: item.energyType,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-        }))
-      )
-      console.log(
-        '[Charts] Day items filtered',
-        filteredItems.map((item) => ({
-          id: item.id,
-          date: item.date,
-          energyType: item.energyType,
-          quantity: item.quantity,
-          unitPrice: item.unitPrice,
-        }))
-      )
-    }
-  }, [groupBy, selectedMonth, typeFilter, dateScopedItems.length, filteredItems.length])
-
   const energy =
     typeFilter === 'all' ? null : getCategoryById(categories, typeFilter)
 
